@@ -6,24 +6,10 @@ def app():
     # =======================================
     # =========== SETTING GAME ==============
     # =======================================
-    # set score table
-    score = ScoreTable()
-    # player name
-    score.choose_player_name()
-    # play with human or AI -- work in progress
-    score.play_versus_human()
-    # start new grid
-    grid = Grid()
-    # player symbol
-    grid.choose_player_symbol()
-    print(f"You chose: {grid.player_symbol}")
+    setup_new_grid()
 
     # print game grid
     grid.show_grid()
-
-    # store occupied fields
-    player_fields = set()
-    ai_fields = set()
 
     # =========================================
     # =========== GAME FUNCTIONS ==============
@@ -36,14 +22,14 @@ def app():
         should_game_go_on = True
         for combo in winner_combos:
             # game is settled, player wins
-            if combo == player_fields:
+            if combo == grid.player_fields:
                 # add point for the player
                 print(f"{score.player} wins")
                 score.add_point(score.player)
                 should_game_go_on = False
                 break
             # game is settled, second player wins
-            elif combo == ai_fields:
+            elif combo == grid.second_player_fields:
                 # add point for the player
                 print(f"{score.second_player} wins")
                 score.add_point(score.second_player)
@@ -64,14 +50,14 @@ def app():
                 check_if_move_possible(player_or_ai="player", current_move=move)
 
             # check if field is free
-            if current_move in player_fields or current_move in ai_fields:
+            if current_move in grid.player_fields or current_move in grid.second_player_fields:
                 print("this field is already taken")
                 move = player_move_input()
                 check_if_move_possible(player_or_ai="player", current_move=move)
 
         # ==== AI move
         elif player_or_ai == "ai":
-            if current_move in player_fields or current_move in ai_fields:
+            if current_move in grid.player_fields or current_move in grid.second_player_fields:
                 # if chosen field not available, get any free square
                 move = choice(grid.get_fields())
                 # move = ai_move()
@@ -86,16 +72,16 @@ def app():
             return move
         else:
             # who moved first? who has more fields occupied?
-            # if len(ai_fields) > len(player_fields):
+            # if len(grid.second_player_fields) > len(player_fields):
                 # ai is close to win,
                 # ai_move should go for a win
-                # (winning_combo - current_ai_fields)-> combo with 1 el. left if the field is free should be the move
+                # (winning_combo - current_grid.second_player_fields)-> combo with 1 el. left if the field is free should be the move
             for combo in winner_combos:
-                ai_chance = (combo - ai_fields)
+                ai_chance = (combo - grid.second_player_fields)
                 if ai_chance.issubset(combo) and len(ai_chance) == 1:
                     # print("ai fields", ai_chance)
                     move = next(iter(ai_chance))
-                    if move in player_fields or move in ai_fields:
+                    if move in grid.player_fields or move in grid.second_player_fields:
                         continue
                     else:
                         return move
@@ -103,11 +89,11 @@ def app():
                     # player is close to win,
                     # ai_move should stop the player
                     for combo in winner_combos:
-                        ai_stops_player = (combo - player_fields)
+                        ai_stops_player = (combo - grid.player_fields)
                         if ai_stops_player.issubset(combo) and len(ai_stops_player) == 1:
                             # print("plr fields", ai_stops_player)
                             move = next(iter(ai_stops_player))
-                            if move in player_fields or move in ai_fields:
+                            if move in grid.player_fields or move in grid.second_player_fields:
                                 continue
                             else:
                                 return move
@@ -136,10 +122,10 @@ def app():
             check_if_move_possible(player_or_ai="player", current_move=player_move)
 
             # store the move
-            player_fields.add(player_move)
+            grid.player_fields.add(player_move)
 
             # mark the field with symbol
-            for field in player_fields:
+            for field in grid.player_fields:
                 if field in grid.get_fields():
                     grid.mark_field(field, grid.player_symbol)
 
@@ -156,10 +142,10 @@ def app():
                 check_if_move_possible(player_or_ai="player", current_move=player_move)
 
                 # store the move
-                ai_fields.add(player_move)
+                grid.second_player_fields.add(player_move)
 
                 # mark the field with symbol
-                for field in ai_fields:
+                for field in grid.second_player_fields:
                     if field in grid.get_fields():
                         grid.mark_field(field, grid.second_player_symbol)
 
@@ -176,10 +162,10 @@ def app():
                 # print("ai actual move", ai_move)
 
                 # store the move
-                ai_fields.add(ai_move)
+                grid.second_player_fields.add(ai_move)
 
                 # mark the field with symbol
-                for field in ai_fields:
+                for field in grid.second_player_fields:
                     if field in grid.get_fields():
                         grid.mark_field(field, grid.second_player_symbol)
 
@@ -203,9 +189,9 @@ def app():
         no_winner = is_game_not_settled()
         turn_count += 1
     else:
-        print("we have a winner")
+        print("We have a winner!")
 
-    print("end")
+    print("Game end")
     print(score.table)
 
 
