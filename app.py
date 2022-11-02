@@ -60,7 +60,8 @@ def app():
             if current_move in grid.player_fields or current_move in grid.second_player_fields:
                 # if chosen field not available, get any free square
                 return True
-
+            elif current_move == None:
+                return True
         else:
             return False
 
@@ -130,6 +131,9 @@ def app():
             else:
                 ai_move = ai_behavior(current_turn)
                 # check if move is possible
+                if move_not_possible(player_or_ai="ai", current_move=ai_move):
+                    # fallback: choose random field if move not possible or returned None
+                    ai_move = choice(list(set(grid.get_fields()) - grid.second_player_fields - grid.player_fields))
 
                 # store the move
                 grid.second_player_fields.add(ai_move)
