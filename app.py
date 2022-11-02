@@ -1,5 +1,5 @@
 from random import choice
-from models import Grid, ScoreTable, winner_combos
+from classes import Grid, ScoreTable, winner_combos
 
 
 def app():
