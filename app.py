@@ -1,5 +1,6 @@
 from random import choice
-from classes import Grid, ScoreTable, winner_combos
+from classes import Grid, ScoreTable
+from helpers import winner_combos
 
 
 def app():
