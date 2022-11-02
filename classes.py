@@ -16,7 +16,6 @@ edges = {"a2", "b1", "b3", "c2"}
 # squares bordered by two edge squares.
 corners = {"a1", "a3", "c1", "c3"}
 
-# Keeps track of game grid, players marked fields, ai strategy
 class Grid:
     def __init__(self):
         self.player_symbol = None
@@ -35,8 +34,8 @@ class Grid:
         }
         # grid visual representation
         self.grid_visual()
-        # self.player_fields = set()
-        # self.ai_fields = set()
+        self.player_fields = set()
+        self.second_player_fields = set()
         self.ai_strategy = None
 
     def get_fields(self):
@@ -47,7 +46,7 @@ class Grid:
 
     def mark_field(self, field, symbol):
         self.fields[field] = symbol
-        # update board
+        # update the grid
         self.grid_visual()
 
     def choose_player_symbol(self):
@@ -70,26 +69,26 @@ class Grid:
             '''
 
     def show_grid(self):
+        '''prints current visual representation of the grid'''
         print(self.grid_visual())
 
-# Store data about score and players
+
 class ScoreTable:
     def __init__(self):
         self.player = "player"
         self.second_player = "player2"
-        self.table = {str(self.player): 0, str(self.second_player): 0}
-        # self.player = list(self.table.keys())[0]
-        # self.second_player = list(self.table.keys())[1]
+        self.table = None
         self.current_player = None
         self.game_versus_human = None
 
     def add_point(self, player_name):
-        self.table[player_name] += 1
+        self.table[str(player_name)] += 1
 
     def choose_player_name(self):
         self.player = str(input("What's your name? ").title())
         if self.player == "":
             self.player = "player"
+        self.__create_score_table()
 
     def play_versus_human(self):
         versus_ai = str(input("Do you want to play against AI? (Y/N): ").strip().upper())
@@ -101,6 +100,12 @@ class ScoreTable:
             if self.second_player == "":
                 self.second_player = "player2"
             self.game_versus_human = True
+            self.__create_score_table()
         else:
             self.second_player = "ai"
             self.game_versus_human = False
+            self.__create_score_table()
+
+    def __create_score_table(self):
+        '''private function, creates the game score table with players names'''
+        self.table = {self.player: 0, self.second_player: 0}
