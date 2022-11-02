@@ -1,6 +1,7 @@
 from random import choice
-from classes import Grid, ScoreTable
 from helpers import winner_combos
+from setup import score, grid, setup_new_grid
+from ai_player import ai_behavior
 
 
 def app():
@@ -41,63 +42,27 @@ def app():
 
         return should_game_go_on
 
-    def check_if_move_possible(player_or_ai, current_move):
+    def move_not_possible(player_or_ai, current_move) -> bool:
         # ==== Player move
         if player_or_ai == "player":
             # check if move is correct
             if current_move not in grid.get_fields():
                 print("choose only fields from the board: A1, B2 etc.")
-                move = player_move_input()
-                check_if_move_possible(player_or_ai="player", current_move=move)
+                return True
 
             # check if field is free
             if current_move in grid.player_fields or current_move in grid.second_player_fields:
                 print("this field is already taken")
-                move = player_move_input()
-                check_if_move_possible(player_or_ai="player", current_move=move)
+                return True
 
         # ==== AI move
         elif player_or_ai == "ai":
             if current_move in grid.player_fields or current_move in grid.second_player_fields:
                 # if chosen field not available, get any free square
-                move = choice(grid.get_fields())
-                # move = ai_move()
-                check_if_move_possible(player_or_ai="ai", current_move=move)
+                return True
 
-    def ai_behavior(current_turn):
-        if current_turn == 0:
-            move = "b2"
-            return move
-        elif current_turn == 1:
-            move = choice(grid.get_fields())
-            return move
         else:
-            # who moved first? who has more fields occupied?
-            # if len(grid.second_player_fields) > len(player_fields):
-                # ai is close to win,
-                # ai_move should go for a win
-                # (winning_combo - current_grid.second_player_fields)-> combo with 1 el. left if the field is free should be the move
-            for combo in winner_combos:
-                ai_chance = (combo - grid.second_player_fields)
-                if ai_chance.issubset(combo) and len(ai_chance) == 1:
-                    # print("ai fields", ai_chance)
-                    move = next(iter(ai_chance))
-                    if move in grid.player_fields or move in grid.second_player_fields:
-                        continue
-                    else:
-                        return move
-                else:
-                    # player is close to win,
-                    # ai_move should stop the player
-                    for combo in winner_combos:
-                        ai_stops_player = (combo - grid.player_fields)
-                        if ai_stops_player.issubset(combo) and len(ai_stops_player) == 1:
-                            # print("plr fields", ai_stops_player)
-                            move = next(iter(ai_stops_player))
-                            if move in grid.player_fields or move in grid.second_player_fields:
-                                continue
-                            else:
-                                return move
+            return False
 
     # ====================================
     # =========== EACH TURN ==============
@@ -118,9 +83,11 @@ def app():
         print(f"It's now {current_player} move")
 
         # player moves
+        # ============
         if current_player == score.player:
             player_move = player_move_input()
-            check_if_move_possible(player_or_ai="player", current_move=player_move)
+            while move_not_possible(player_or_ai="player", current_move=player_move):
+                player_move = player_move_input()
 
             # store the move
             grid.player_fields.add(player_move)
@@ -136,11 +103,14 @@ def app():
             score.current_player = score.second_player
 
         # human player 2 or AI moves
+        # ==========================
         else:
+            # game versus human/player2
+            # =========================
             if score.game_versus_human:
-                # game versus human/player2
                 player_move = player_move_input()
-                check_if_move_possible(player_or_ai="player", current_move=player_move)
+                while move_not_possible(player_or_ai="player", current_move=player_move):
+                    player_move = player_move_input()
 
                 # store the move
                 grid.second_player_fields.add(player_move)
@@ -154,13 +124,12 @@ def app():
                 grid.show_grid()
                 # switch players
                 score.current_player = score.player
-            # AI moves
+
+            # game versus AI
+            # ==============
             else:
                 ai_move = ai_behavior(current_turn)
-                # print("ai supposed move", ai_move)
-                # check if field is free
-                check_if_move_possible(player_or_ai="ai", current_move=ai_move)
-                # print("ai actual move", ai_move)
+                # check if move is possible
 
                 # store the move
                 grid.second_player_fields.add(ai_move)
